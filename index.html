@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎰 MEGA CASINO EMPIRE 🎰</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle, #331a4d 0%, #1a0d29 100%);
+            --primary-color: rgba(26, 13, 41, 0.85);
+            --accent-color: #ffd700;
+            --neon-pink: #ff00ff;
+            --neon-blue: #00f6ff;
+            --text-color: #f0f0f0;
+            --red-color: #e50914;
+            --green-color: #00b894;
+            --poker-felt: #006400;
+        }
+
+        @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 5px var(--green-color), 0 0 10px var(--green-color); } 50% { box-shadow: 0 0 20px var(--green-color), 0 0 30px var(--green-color); } }
+        @keyframes pulse-red { 0%, 100% { box-shadow: 0 0 5px var(--red-color), 0 0 10px var(--red-color); } 50% { box-shadow: 0 0 20px var(--red-color), 0 0 30px var(--red-color); } }
+        @keyframes jackpot-scroll { from { transform: translateX(100%); } to { transform: translateX(-150%); } }
+        @keyframes result-fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); } 20%, 40%, 60%, 80% { transform: translateX(10px); } }
+        @keyframes toast-in { from { transform: translateX(110%); } to { transform: translateX(0); } }
+        @keyframes toast-out { to { transform: translateX(110%); } }
+        @keyframes lever-pull { 0% { transform: rotate(0deg); } 50% { transform: rotate(45deg); } 100% { transform: rotate(0deg); } }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif; background: var(--bg-gradient); color: var(--text-color);
+            margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+        }
+        .casino-container {
+            width: 100%; max-width: 1100px; background: var(--primary-color); backdrop-filter: blur(10px);
+            border-radius: 20px; border: 2px solid var(--neon-pink);
+            box-shadow: 0 0 35px var(--neon-pink), inset 0 0 20px rgba(255, 0, 255, 0.5);
+            overflow: hidden; display: flex; flex-direction: column; position: relative;
+        }
+        header { background-color: rgba(0,0,0,0.5); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--neon-pink); }
+        header h1 { margin: 0; font-family: 'Orbitron', sans-serif; color: var(--accent-color); font-size: 28px; text-shadow: 0 0 5px var(--accent-color), 0 0 10px var(--accent-color); cursor: pointer; }
+        .player-info { text-align: right; }
+        #player-balance { font-size: 22px; font-weight: bold; color: var(--green-color); text-shadow: 0 0 5px var(--green-color); }
+        #player-count { font-size: 14px; color: #ccc; }
+        nav { display: flex; background-color: rgba(0,0,0,0.3); overflow-x: auto; }
+        nav button { background: transparent; border: none; color: var(--text-color); padding: 15px 20px; cursor: pointer; font-size: 16px; transition: all 0.3s; text-transform: uppercase; font-weight: bold; border-bottom: 3px solid transparent; flex-shrink: 0; }
+        nav button:hover { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+        nav button.active { color: var(--neon-pink); border-bottom-color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); }
+        main { padding: 25px; min-height: 550px; }
+        .game-content { display: none; }
+        .game-content.active { display: block; animation: result-fade-in 0.5s; }
+        h2 { font-family: 'Orbitron'; color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+        .controls { margin-top: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        input[type="number"] { padding: 10px; border-radius: 5px; border: 1px solid var(--neon-blue); background-color: #222; color: var(--text-color); width: 150px; font-size: 16px; }
+        .btn { padding: 12px 22px; border-radius: 5px; border: 1px solid; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+        .btn:disabled { cursor: not-allowed; opacity: 0.5; animation: none !important; }
+        .btn-bet { background-color: var(--green-color); color: #111; border-color: var(--green-color); animation: pulse-green 2s infinite; }
+        .btn-bet:hover:not(:disabled) { transform: scale(1.05); }
+        .btn-rage { background-color: var(--red-color); color: white; border-color: var(--red-color); animation: pulse-red 1.5s infinite; display: none; }
+        .btn-action { background-color: var(--neon-blue); color: #111; border-color: var(--neon-blue); }
+        .btn-action:hover:not(:disabled) { transform: scale(1.05); }
+        .btn-option { background-color: #444; color: white; border-color: #666; }
+        .btn-option:hover:not(:disabled) { background-color: #555; }
+        .btn-option.selected { background-color: var(--red-color); border-color: var(--red-color); transform: scale(1.05); }
+        #game-result { margin-top: 20px; font-size: 18px; font-weight: bold; padding: 15px; background-color: rgba(0,0,0,0.4); border-radius: 5px; min-height: 50px; text-align: center; border-left: 5px solid var(--accent-color); display: flex; justify-content: center; align-items: center; }
+        .win-message { animation: result-fade-in 0.5s; color: var(--green-color); font-size: 24px; text-shadow: 0 0 10px var(--green-color); }
+        .loss-message { animation: result-fade-in 0.5s; color: var(--red-color); }
+        .tie-message { animation: result-fade-in 0.5s; color: var(--text-color); }
+        #jackpot-ticker { background: linear-gradient(90deg, #111, #333, #111); color: var(--accent-color); padding: 10px 0; text-align: center; font-size: 16px; overflow: hidden; white-space: nowrap; }
+        #jackpot-ticker span { display: inline-block; padding-left: 100%; animation: jackpot-scroll 18s linear infinite; text-shadow: 0 0 5px var(--accent-color); }
+        footer { background-color: rgba(0,0,0,0.5); padding: 15px 25px; border-top: 2px solid var(--neon-pink); }
+        #fake-stats { list-style: none; padding: 0; margin: 0; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px; }
+        #fake-stats li { font-size: 14px; color: #ccc; }
+        #fake-stats li strong { color: var(--neon-blue); font-family: 'Orbitron'; }
+
+        /* Toast Popup */
+        #toast-notification { position: fixed; top: 20px; right: 20px; background-color: var(--accent-color); color: #111; padding: 15px 25px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-weight: bold; z-index: 1000; transform: translateX(110%); }
+        #toast-notification.show { animation: toast-in 0.5s forwards; }
+        #toast-notification.hide { animation: toast-out 0.5s forwards; }
+
+        /* Modal Styles (Double Up & Poker Matchmaking) */
+        .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 999; }
+        .modal-overlay.show { display: flex; }
+        .modal-overlay h3 { font-size: 32px; color: var(--accent-color); text-shadow: 0 0 10px var(--accent-color); }
+        .modal-overlay p { font-size: 18px; }
+
+        /* --- Game Specific Styles --- */
+        .card { width: 60px; height: 90px; background-color: white; color: black; border-radius: 5px; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; border: 1px solid #ccc; box-shadow: 3px 3px 5px rgba(0,0,0,0.3); }
+        .card.red { color: var(--red-color); }
+        .card.hidden { background: linear-gradient(135deg, var(--neon-blue) 25%, var(--neon-pink) 75%); color: transparent; }
+        .card-area { display: flex; gap: 20px; justify-content: center; margin: 20px 0; min-height: 120px; }
+        .hand { border: 1px solid #444; padding: 10px; border-radius: 8px; width: 40%; background: rgba(0,0,0,0.2); }
+        .hand h3 { margin-top: 0; }
+        .cards { display: flex; gap: 5px; flex-wrap: wrap; min-height: 95px; }
+        
+        /* Slots */
+        .slot-machine-container { display: flex; justify-content: center; align-items: flex-end; gap: 20px; }
+        .slot-machine-casing { background: linear-gradient(145deg, #444, #222); padding: 30px 20px; border-radius: 20px; border: 5px solid #666; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .slot-reels { display: flex; justify-content: center; gap: 15px; background: #111; padding: 10px; border-radius: 10px; }
+        .reel { width: 80px; height: 80px; background-color: #fff; border: 5px solid #555; display: flex; justify-content: center; align-items: center; font-size: 50px; border-radius: 10px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        #slots.mega-mode .reel { border-color: var(--accent-color); animation: pulse-green 1s infinite; }
+        .lever-container { display: flex; flex-direction: column; align-items: center; }
+        .lever-arm { width: 10px; height: 50px; background: #888; border-radius: 5px; }
+        .lever-handle { width: 30px; height: 30px; background: var(--red-color); border-radius: 50%; cursor: pointer; border: 2px solid #ff5555; }
+        .lever-arm.pull { animation: lever-pull 0.5s ease-in-out; }
+
+        #keno-board { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin: 15px 0; }
+        .keno-num { background-color: #444; color: white; border: 1px solid #666; cursor: pointer; padding: 5px; text-align: center; border-radius: 4px; transition: all 0.2s; }
+        .keno-num.selected { background-color: var(--neon-blue); color: #111; transform: scale(1.1); }
+        .keno-num.hit { background-color: var(--green-color); }
+        .keno-num.selected.hit { background-color: var(--neon-pink); color: white; box-shadow: 0 0 10px var(--neon-pink); animation: pulse-green 1s; }
+        #roulette-visual { position: relative; width: 300px; height: 300px; margin: 20px auto; }
+        .roulette-wheel { width: 100%; height: 100%; border-radius: 50%; border: 10px solid #633a1d; box-shadow: inset 0 0 20px rgba(0,0,0,0.7); transition: transform 8s cubic-bezier(0.2, 0.8, 0.3, 1); position: relative; }
+        .roulette-wheel .number { position: absolute; top: 50%; left: 50%; transform-origin: center center; width: 30px; height: 30px; line-height: 30px; margin-left: -15px; margin-top: -15px; color: white; text-align: center; font-weight: bold; font-size: 14px; }
+        .roulette-ball { position: absolute; top: 20px; left: 50%; width: 15px; height: 15px; background: white; border-radius: 50%; margin-left: -7.5px; transition: transform 7.8s cubic-bezier(0.5, 0, 0.5, 1); }
+        #race-track { padding: 20px; background: #5a8a5a; border-radius: 10px; }
+        .horse-lane { position: relative; height: 40px; background: #6b9b6b; border-bottom: 2px dashed #eee; margin-bottom: 5px; }
+        .horse { position: absolute; top: 5px; left: 0; font-size: 30px; transition: transform 0.1s linear; }
+        #ladder-visual { text-align: center; margin: 20px auto; }
+        #ladder-svg { background-color: rgba(0,0,0,0.2); border-radius: 10px; }
+        #dice-visual { display: flex; justify-content: center; align-items: center; height: 150px; }
+        #dice-cup { text-align: center; }
+        #dice-cup.shake { animation: shake 0.5s; }
+        .dice { display: inline-block; width: 60px; height: 60px; background: white; color: black; border-radius: 10px; margin: 0 10px; font-size: 40px; font-weight: bold; line-height: 60px; text-align: center; }
+        
+        /* Poker Styles */
+        #game-poker .poker-container { display: none; }
+        #game-poker.active .poker-container { display: block; }
+        #poker-table { background: var(--poker-felt); border: 10px solid #5a3a22; border-radius: 100px; padding: 20px; position: relative; height: 450px; display: grid; grid-template-columns: 1fr 2fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 10px; }
+        .poker-player-area { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .poker-player-area .cards { display: flex; gap: 5px; }
+        .poker-player-area .player-name { font-weight: bold; }
+        .poker-player-area .player-status { font-size: 14px; color: var(--accent-color); min-height: 20px; }
+        #poker-player-0 { grid-column: 2; grid-row: 3; } /* Player */
+        #poker-player-1 { grid-column: 1; grid-row: 2; } /* AI 1 */
+        #poker-player-2 { grid-column: 2; grid-row: 1; } /* AI 2 */
+        #poker-player-3 { grid-column: 3; grid-row: 2; } /* AI 3 */
+        .community-area { grid-column: 2; grid-row: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .community-area .cards { display: flex; gap: 5px; }
+        .community-area #pot-display { font-size: 20px; font-weight: bold; margin-top: 10px; color: var(--accent-color); }
+        #poker-controls { justify-content: center; }
+    </style>
+</head>
+<body>
+
+    <div class="casino-container">
+        <header>
+            <h1 onclick="location.reload()">VEGAS SIM</h1>
+            <div class="player-info">
+                <span id="player-balance">₩1,000,000</span>
+                <div id="player-count">접속자: ...명</div>
+            </div>
+        </header>
+
+        <nav id="game-nav">
+            <button data-game="poker">포커</button>
+            <button data-game="dice">주사위</button>
+            <button data-game="ladder">사다리</button>
+            <button data-game="slots">슬롯</button>
+            <button data-game="roulette">룰렛</button>
+            <button data-game="horse">경마</button>
+            <button data-game="blackjack">블랙잭</button>
+            <button data-game="baccarat">바카라</button>
+            <button data-game="keno">키노</button>
+        </nav>
+
+        <main id="game-area-wrapper">
+            <!-- Game content will be injected here -->
+        </main>
+        <div id="game-result">게임을 선택하고 베팅하세요.</div>
+
+        <div id="jackpot-ticker"><span id="jackpot-message"></span></div>
+        <footer><ul id="fake-stats"></ul></footer>
+        
+        <div id="toast-notification"></div>
+        <div id="double-up-modal" class="modal-overlay">
+            <h3>더블업!</h3>
+            <p id="double-up-winnings"></p>
+            <div class="controls">
+                <button id="double-up-red" class="btn btn-option" style="background-color: var(--red-color)">레드</button>
+                <button id="double-up-black" class="btn btn-option" style="background-color: #333">블랙</button>
+            </div>
+            <button id="double-up-quit" class="btn btn-action" style="margin-top: 20px;">그만하기</button>
+        </div>
+        <div id="poker-matchmaking-modal" class="modal-overlay">
+            <h3 id="poker-matchmaking-title">판돈 선택</h3>
+            <div id="poker-stakes-selection" class="controls">
+                <button class="btn btn-bet" data-ante="10000">₩10,000</button>
+                <button class="btn btn-bet" data-ante="50000">₩50,000</button>
+                <button class="btn btn-bet" data-ante="100000">₩100,000</button>
+            </div>
+            <p id="poker-matchmaking-status" style="display:none;">매칭 중...</p>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const mainEl = document.getElementById('game-area-wrapper');
+    mainEl.innerHTML = `
+        <div id="game-poker" class="game-content"><div class="poker-container"><div id="poker-table"><div id="poker-player-0" class="poker-player-area"><div class="player-name">Player</div><div class="cards"></div><div class="player-status"></div></div><div id="poker-player-1" class="poker-player-area"><div class="player-name">AI 1</div><div class="cards"></div><div class="player-status"></div></div><div id="poker-player-2" class="poker-player-area"><div class="player-name">AI 2</div><div class="cards"></div><div class="player-status"></div></div><div id="poker-player-3" class="poker-player-area"><div class="player-name">AI 3</div><div class="cards"></div><div class="player-status"></div></div><div class="community-area"><div class="cards"></div><div id="pot-display">Pot: ₩0</div></div></div><div id="poker-controls" class="controls"><button id="poker-bet" class="btn btn-action" disabled>벳</button><button id="poker-call" class="btn btn-action" disabled>콜</button><button id="poker-check" class="btn btn-action" disabled>체크</button><button id="poker-fold" class="btn btn-action" disabled>폴드</button></div></div><div class="controls" style="justify-content: center;"><button id="poker-start-game" class="btn btn-bet">게임 시작</button></div></div>
+        <div id="game-dice" class="game-content"><h2>주사위</h2><p>두 주사위의 합을 예측하여 베팅하세요.</p><div id="dice-visual"><div id="dice-cup"><span class="dice">?</span><span class="dice">?</span></div></div><div id="dice-options" class="controls" style="justify-content: center;"><button class="btn btn-option" data-bet-type="small">소 (1.1배)</button><button class="btn btn-option" data-bet-type="big">대 (3배)</button><button class="btn btn-option" data-bet-type="odd">홀 (2배)</button><button class="btn btn-option" data-bet-type="even">짝 (2배)</button></div><div class="controls" style="justify-content: center;"><input type="number" id="dice-bet" value="10000"><button id="dice-roll" class="btn btn-bet">굴리기</button><button class="btn-rage" id="dice-rage-bet">2배로 재도전</button></div></div>
+        <div id="game-ladder" class="game-content"><h2>사다리게임</h2><div id="ladder-visual"><svg id="ladder-svg" width="600" height="400"></svg></div><div id="ladder-options" class="controls" style="justify-content: center;"></div><div class="controls" style="justify-content: center;"><input type="number" id="ladder-bet" value="10000"><button id="ladder-start" class="btn btn-bet">시작</button><button class="btn-rage" id="ladder-rage-bet">2배로 재도전</button></div></div>
+        <div id="game-slots" class="game-content"><h2>슬롯머신</h2><p id="slots-description">같은 그림 3개를 맞추면 당첨됩니다.</p><div class="slot-machine-container"><div class="slot-machine-casing"><div id="slots" class="slot-reels"><div class="reel" id="reel1">❓</div><div class="reel" id="reel2">❓</div><div class="reel" id="reel3">❓</div></div></div><div class="lever-container"><div class="lever-arm" id="slots-lever-arm"><div class="lever-handle" id="slots-lever-handle"></div></div></div></div><div class="controls" style="justify-content: center;"><input type="number" id="slots-bet" value="10000"><button id="slots-spin" class="btn btn-bet">스핀</button><button class="btn-rage" id="slots-rage-bet">2배로 재도전</button></div></div>
+        <div id="game-roulette" class="game-content"><h2>룰렛</h2><div id="roulette-visual"><div class="roulette-wheel"></div><div class="roulette-ball"></div></div><div id="roulette-options" class="controls" style="justify-content: center;"><button class="btn btn-option" data-bet-type="red">레드 (2배)</button><button class="btn btn-option" data-bet-type="black">블랙 (2배)</button><button class="btn btn-option" data-bet-type="even">짝수 (2배)</button><button class="btn btn-option" data-bet-type="odd">홀수 (2배)</button></div><div class="controls" style="justify-content: center;"><input type="number" id="roulette-bet" value="10000"><button id="roulette-spin" class="btn btn-bet">스핀</button><button class="btn-rage" id="roulette-rage-bet">2배로 재도전</button></div></div>
+        <div id="game-horse" class="game-content"><h2>경마</h2><div id="race-track"></div><div id="horse-options" class="controls" style="justify-content: center;"><button class="btn btn-option" data-choice="1">1번마 (2배)</button><button class="btn btn-option" data-choice="2">2번마 (3배)</button><button class="btn btn-option" data-choice="3">3번마 (4배)</button><button class="btn btn-option" data-choice="4">4번마 (5배)</button></div><div class="controls" style="justify-content: center;"><input type="number" id="horse-bet" value="10000"><button id="horse-start" class="btn btn-bet">경주 시작</button><button class="btn-rage" id="horse-rage-bet">2배로 재도전</button></div></div>
+        <div id="game-blackjack" class="game-content"><h2>블랙잭</h2><div class="card-area"><div class="hand"><h3>플레이어 (<span id="player-score">0</span>)</h3><div id="player-cards" class="cards"></div></div><div class="hand"><h3>딜러 (<span id="dealer-score">0</span>)</h3><div id="dealer-cards" class="cards"></div></div></div><div class="controls" style="justify-content: center;"><input type="number" id="blackjack-bet" value="10000"><button id="blackjack-deal" class="btn btn-bet">딜</button><button id="blackjack-hit" class="btn btn-action" disabled>Hit</button><button id="blackjack-stand" class="btn btn-action" disabled>Stand</button><button class="btn-rage" id="blackjack-rage-bet">2배로 재도전</button></div></div>
+        <div id="game-baccarat" class="game-content"><h2>바카라</h2><div class="card-area"><div class="hand"><h3>플레이어 (<span id="baccarat-player-score">0</span>)</h3><div id="baccarat-player-cards" class="cards"></div></div><div class="hand"><h3>뱅커 (<span id="baccarat-banker-score">0</span>)</h3><div id="baccarat-banker-cards" class="cards"></div></div></div><div id="baccarat-options" class="controls" style="justify-content: center;"><button class="btn btn-option" data-bet-type="player">플레이어 (2배)</button><button class="btn btn-option" data-bet-type="banker">뱅커 (1.95배)</button><button class="btn btn-option" data-bet-type="tie">타이 (9배)</button></div><div class="controls" style="justify-content: center;"><input type="number" id="baccarat-bet" value="10000"><button id="baccarat-deal" class="btn btn-bet">딜</button><button class="btn-rage" id="baccarat-rage-bet">2배로 재도전</button></div></div>
+        <div id="game-keno" class="game-content"><h2>키노</h2><p>10개의 숫자를 선택하고 추첨하여 맞춘 개수에 따라 상금을 받으세요.</p><div id="keno-board"></div><div class="controls" style="justify-content: center;"><input type="number" id="keno-bet" value="10000"><button id="keno-draw" class="btn btn-bet">추첨</button><button id="keno-clear" class="btn btn-action">초기화</button><button class="btn-rage" id="keno-rage-bet">2배로 재도전</button></div></div>
+    `;
+
+    // --- 상태 관리 및 DOM 요소 ---
+    const gameState = { balance: 1000000, currentGame: 'poker', lastWinnings: 0 };
+    const balanceEl = document.getElementById('player-balance');
+    const playerCountEl = document.getElementById('player-count');
+    const gameNav = document.getElementById('game-nav');
+    const gameResultEl = document.getElementById('game-result');
+    const jackpotMessageEl = document.getElementById('jackpot-message');
+    const fakeStatsEl = document.getElementById('fake-stats');
+    const toastEl = document.getElementById('toast-notification');
+    const doubleUpModal = document.getElementById('double-up-modal');
+    
+    // --- 유틸리티 및 조작 함수 ---
+    function saveState() { localStorage.setItem('casinoGameStateV10', JSON.stringify(gameState)); }
+    function loadState() { const saved = localStorage.getItem('casinoGameStateV10'); if (saved) { const p = JSON.parse(saved); gameState.balance = (typeof p.balance === 'number' && p.balance > 0) ? p.balance : 1000000; } updateBalance(); }
+    function updateBalance(amount = 0) { gameState.balance += amount; balanceEl.textContent = `₩${gameState.balance.toLocaleString()}`; saveState(); }
+    function updateFakePlayerCount() { let c = parseInt(playerCountEl.textContent.replace(/[^0-9]/g, '')) || 850; c += Math.floor(Math.random() * 21) - 10; playerCountEl.textContent = `접속자: ${c < 800 ? 800 : c}명`; }
+    function showFakeJackpot() { const u=['Lucky77','WinnerKim','JackpotJo','AcePlayer','GoldHand','TheGambler','BetKing','HighRoller','CardShark','PokerFace','田中太郎','김민준','李强','Viper','Shadow']; const g=['슬롯','포커','경마']; const a=['5,000,000','12,000,000','3,800,000','25,000,000']; const msg = `🎉 ${u[Math.floor(Math.random()*u.length)]}님이 ${g[Math.floor(Math.random()*g.length)]}에서 ₩${a[Math.floor(Math.random()*a.length)]} 잭팟!`; toastEl.textContent = msg; toastEl.className = 'show'; setTimeout(() => { toastEl.className = 'hide'; }, 4000); }
+    function updateFakeGameStats() { const g=['포커','주사위','슬롯','룰렛','사다리']; let h=`<li><strong>실시간 RTP:</strong></li>`; g.forEach(n => { const r=(50+Math.random()*20).toFixed(2); h+=`<li>${n}: <strong style="color:${r>65?'var(--neon-blue)':'var(--red-color)'}">${r}%</strong></li>`; }); fakeStatsEl.innerHTML = h; }
+    function getManipulatedWinRate() { return 0.30 + (Math.sin(Date.now() / 30000) * 0.10); } // 승률 대폭 하향
+    function placeBet(betAmount, button) { if (button && button.disabled) return false; if (betAmount < 0) betAmount = 0; if (gameState.balance < betAmount) { gameResultEl.innerHTML = `<span class="loss-message">잔액이 부족합니다.</span>`; return false; } updateBalance(-betAmount); return true; }
+    function handleWin(winnings, message) { hideRageBet(); updateBalance(winnings); gameResultEl.innerHTML = `<div class="win-message">${message}<br>+₩${winnings.toLocaleString()}</div>`; gameState.lastWinnings = winnings; setTimeout(() => offerDoubleUp(winnings), 1000); }
+    function handleLoss(message) { showRageBet(); gameResultEl.innerHTML = `<div class="loss-message">${message}</div>`; }
+    function handleTie(betAmount, message) { hideRageBet(); updateBalance(betAmount); gameResultEl.innerHTML = `<div class="tie-message">${message}</div>`; }
+    function selectOption(container, selectedButton) { container.querySelectorAll('.btn-option').forEach(btn => btn.classList.remove('selected')); selectedButton.classList.add('selected'); }
+    function disableAllBets(disabled) { document.querySelectorAll('.btn-bet, .btn-action, .btn-option').forEach(btn => btn.disabled = disabled); }
+    function createCardEl(card, isHidden = false) { const el = document.createElement('div'); el.className = 'card'; if(isHidden) el.classList.add('hidden'); else { if (['♥', '♦'].includes(card.suit)) el.classList.add('red'); el.textContent = card.value; } return el; }
+
+    // Rage Bet Feature
+    function showRageBet() { const rageBtn = document.getElementById(`${gameState.currentGame}-rage-bet`); if (rageBtn) rageBtn.style.display = 'inline-block'; }
+    function hideRageBet() { document.querySelectorAll('.btn-rage').forEach(btn => btn.style.display = 'none'); }
+    document.querySelectorAll('.btn-rage').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const gameId = btn.id.split('-')[0];
+            const betInput = document.getElementById(`${gameId}-bet`);
+            if (betInput) {
+                betInput.value = parseInt(betInput.value) * 2;
+                const gameActionBtn = document.getElementById(`${gameId}-start`) || document.getElementById(`${gameId}-spin`) || document.getElementById(`${gameId}-roll`) || document.getElementById(`${gameId}-deal`) || document.getElementById(`${gameId}-draw`);
+                if(gameActionBtn) gameActionBtn.click();
+            }
+        });
+    });
+
+    // Double Up Feature
+    document.getElementById('double-up-quit').addEventListener('click', () => doubleUpModal.classList.remove('show'));
+    ['double-up-red', 'double-up-black'].forEach(id => {
+        document.getElementById(id).addEventListener('click', () => {
+            const amount = gameState.lastWinnings;
+            const win = Math.random() < 0.35; // Double up is also rigged
+            if (win) {
+                gameState.lastWinnings *= 2;
+                updateBalance(amount); // Give back the original winnings, then add the new total
+                document.getElementById('double-up-winnings').textContent = `성공! ₩${gameState.lastWinnings.toLocaleString()}을 두 배로?`;
+                gameResultEl.innerHTML = `<div class="win-message">더블업 성공! +₩${amount.toLocaleString()}</div>`;
+            } else {
+                updateBalance(-amount);
+                gameResultEl.innerHTML = `<div class="loss-message">더블업 실패... ₩${amount.toLocaleString()}을 잃었습니다.</div>`;
+                doubleUpModal.classList.remove('show');
+            }
+        });
+    });
+    function offerDoubleUp(amount) { if (amount <= 0) return; doubleUpModal.classList.add('show'); document.getElementById('double-up-winnings').textContent = `₩${amount.toLocaleString()}을 두 배로?`; }
+
+    // --- 게임 객체 정의 ---
+    const poker = {
+        startGameBtn: document.getElementById('poker-start-game'), betBtn: document.getElementById('poker-bet'), callBtn: document.getElementById('poker-call'), checkBtn: document.getElementById('poker-check'), foldBtn: document.getElementById('poker-fold'),
+        matchmakingModal: document.getElementById('poker-matchmaking-modal'),
+        pokerContainer: document.querySelector('#game-poker .poker-container'),
+        playerAreas: Array.from({length: 4}, (_, i) => document.getElementById(`poker-player-${i}`)), communityArea: document.querySelector('.community-area .cards'), potDisplay: document.getElementById('pot-display'),
+        deck: [], players: [], communityCards: [], pot: 0, currentBet: 0, gamePhase: '', activePlayerIndex: 0, ante: 10000, dealerIndex: 0,
+        aiNames: ["MadMax", "Viper", "Raptor", "Ghost", "Shadow", "Blaze", "Vortex", "Titan", "김민준", "이서준", "박도윤", "田中太郎", "佐藤健", "鈴木一郎", "李强", "王伟", "张敏"],
+        init() { this.startGameBtn.addEventListener('click', () => this.showMatchmaking()); this.foldBtn.addEventListener('click', () => this.playerAction('fold')); this.checkBtn.addEventListener('click', () => this.playerAction('check')); this.callBtn.addEventListener('click', () => this.playerAction('call')); this.betBtn.addEventListener('click', () => this.playerAction('bet')); document.getElementById('poker-stakes-selection').addEventListener('click', e => { if(e.target.dataset.ante) this.startMatchmaking(parseInt(e.target.dataset.ante)); }); },
+        initVisuals() { this.resetTable(); this.pokerContainer.style.display = 'none'; this.startGameBtn.style.display = 'inline-block'; },
+        showMatchmaking() { this.matchmakingModal.classList.add('show'); document.getElementById('poker-stakes-selection').style.display = 'flex'; document.getElementById('poker-matchmaking-status').style.display = 'none'; },
+        startMatchmaking(ante) { this.ante = ante; document.getElementById('poker-stakes-selection').style.display = 'none'; document.getElementById('poker-matchmaking-status').style.display = 'block'; setTimeout(() => { this.matchmakingModal.classList.remove('show'); this.startGame(); }, 2000); },
+        async startGame() { if (!placeBet(this.ante, null)) return; this.pokerContainer.style.display = 'block'; this.startGameBtn.style.display = 'none'; this.resetTable(); gameResultEl.innerHTML = '<span>새로운 게임이 시작됩니다...</span>'; this.pot = this.ante; const shuffledNames = this.aiNames.sort(() => 0.5 - Math.random()); this.players = Array.from({length: 4}, (_, i) => ({ id: i, name: i === 0 ? 'Player' : shuffledNames[i-1], hand: [], bestHand: null, status: 'active', betInRound: 0, hasActed: false })); this.dealerIndex = (this.dealerIndex + 1) % this.players.length; this.createDeck(); const shouldPlayerLose = Math.random() > getManipulatedWinRate(); for(let i=0; i<2; i++) { for(const p of this.players) { p.hand.push(this.deck.pop()); } } if (shouldPlayerLose && this.getAIHandStrength(this.players[0].hand) > 1) { const targetAI = this.players[1]; for (let i = 0; i < this.deck.length - 1; i++) { if (this.getAIHandStrength([this.deck[i], this.deck[i + 1]]) > this.getAIHandStrength(this.players[0].hand) + 1) { [this.deck[i], targetAI.hand[0]] = [targetAI.hand[0], this.deck[i]]; [this.deck[i + 1], targetAI.hand[1]] = [targetAI.hand[1], this.deck[i + 1]]; console.log("POKER MANIPULATION: AI was given a better hand."); break; } } } this.updateUI(); this.activePlayerIndex = this.dealerIndex; await this.handleBettingRound('pre-flop'); },
+        async handleBettingRound(phase) {
+            this.gamePhase = phase;
+            if (phase !== 'pre-flop') { this.currentBet = 0; this.players.forEach(p => p.betInRound = 0); }
+            this.players.forEach(p => p.hasActed = false); let lastRaiser = null;
+            this.activePlayerIndex = this.dealerIndex;
+            while(true) {
+                const player = this.players[this.activePlayerIndex];
+                if (player.status === 'active') {
+                    if (lastRaiser === player) break;
+                    this.updatePlayerStatus(player.id, "Thinking..."); await new Promise(res => setTimeout(res, player.id === 0 ? 100 : 1000));
+                    let action = 'check';
+                    if (player.id === 0) { this.updatePlayerControls(); action = await this.waitForPlayerAction(); this.disablePlayerControls(); } else { action = this.getAIAction(player); }
+                    player.hasActed = true;
+                    if (action === 'fold') { player.status = 'fold'; this.updatePlayerStatus(player.id, "Fold"); }
+                    else if (action === 'check') { this.updatePlayerStatus(player.id, "Check"); }
+                    else if (action === 'call') { const callAmount = this.currentBet - player.betInRound; if(placeBet(callAmount, null)) { this.pot += callAmount; player.betInRound += callAmount; this.updatePlayerStatus(player.id, `Call`); } else { player.status = 'fold'; this.updatePlayerStatus(player.id, "Fold (No Funds)"); } }
+                    else if (action === 'bet') { const betAmount = this.ante; if(placeBet(betAmount, null)) { this.pot += betAmount; this.currentBet += betAmount; player.betInRound += betAmount; lastRaiser = player; this.updatePlayerStatus(player.id, `Bet ₩${betAmount.toLocaleString()}`); } else { player.status = 'fold'; this.updatePlayerStatus(player.id, "Fold (No Funds)"); } }
+                    this.updateUI();
+                    const activePlayersNow = this.players.filter(p => p.status === 'active');
+                    if(activePlayersNow.length <= 1) { this.endGame(); return; }
+                }
+                this.activePlayerIndex = (this.activePlayerIndex + 1) % this.players.length;
+                if(this.players.filter(p => p.status === 'active').every(p => p.hasActed && p.betInRound === this.currentBet)) break;
+            }
+            const activePlayers = this.players.filter(p => p.status === 'active');
+            if (activePlayers.length <= 1) { this.endGame(); return; }
+            const nextPhaseMap = { 'pre-flop': 'dealFlop', 'flop': 'dealTurn', 'turn': 'dealRiver', 'river': 'endGame' };
+            if(nextPhaseMap[phase]) await this[nextPhaseMap[phase]]();
+        },
+        async dealFlop() { this.communityCards.push(this.deck.pop(), this.deck.pop(), this.deck.pop()); this.updateUI(); this.activePlayerIndex = this.dealerIndex; await this.handleBettingRound('flop'); },
+        async dealTurn() { this.communityCards.push(this.deck.pop()); this.updateUI(); this.activePlayerIndex = this.dealerIndex; await this.handleBettingRound('turn'); },
+        async dealRiver() { this.communityCards.push(this.deck.pop()); this.updateUI(); this.activePlayerIndex = this.dealerIndex; await this.handleBettingRound('river'); },
+        endGame() { const activePlayers = this.players.filter(p => p.status === 'active'); let winners = []; if(activePlayers.length === 1) { winners = activePlayers; } else { activePlayers.forEach(p => { p.bestHand = this.evaluateHand(p.hand.concat(this.communityCards)); }); winners = [activePlayers[0]]; for(let i=1; i<activePlayers.length; i++) { const comparison = this.compareHands(winners[0].bestHand, activePlayers[i].bestHand); if(comparison < 0) winners = [activePlayers[i]]; else if (comparison === 0) winners.push(activePlayers[i]); } } this.awardPot(winners); this.updateUI(true); this.startGameBtn.style.display = 'inline-block'; document.getElementById('poker-controls').style.display = 'none'; },
+        awardPot(winners) { if (winners.length === 0) return; const winAmount = this.pot / winners.length; const winnerName = winners.map(w => w.name).join(', '); const handName = winners.length > 0 && winners[0].bestHand ? ` with ${winners[0].bestHand.name}` : ''; if(winners.some(w => w.id === 0)) { handleWin(winAmount, `${winnerName} wins${handName}!`); } else { handleLoss(`${winnerName} wins${handName}.`); } },
+        getAIAction(player) { const handStrength = this.getAIHandStrength(player.hand, this.communityCards); if (this.currentBet > player.betInRound) { return handStrength > 0 || Math.random() < 0.1 ? 'call' : 'fold'; } else { return handStrength > 2 && Math.random() < 0.5 ? 'bet' : 'check'; } },
+        getAIHandStrength(hole, community = []) { const hand=hole.concat(community); const r=this.evaluateHand(hand).rank; if(r>1) return r; if(hole[0].value===hole[1].value) return 2; const v='23456789TJQKA'; if(v.indexOf(hole[0].value)>8 || v.indexOf(hole[1].value)>8) return 1; return 0; },
+        waitForPlayerAction() { return new Promise(resolve => { this.resolvePlayerAction = resolve; }); },
+        playerAction(action) { if (this.resolvePlayerAction) { this.resolvePlayerAction(action); this.resolvePlayerAction = null; } },
+        updatePlayerControls() { this.foldBtn.disabled = false; const toCall = this.currentBet - this.players[0].betInRound; this.checkBtn.disabled = toCall > 0; this.callBtn.disabled = toCall <= 0; if(!this.callBtn.disabled) this.callBtn.textContent = `콜 (₩${toCall.toLocaleString()})`; this.betBtn.disabled = toCall > 0; },
+        disablePlayerControls() { this.foldBtn.disabled = true; this.checkBtn.disabled = true; this.callBtn.disabled = true; this.betBtn.disabled = true; },
+        updateUI(reveal = false) { this.communityArea.innerHTML = ''; this.communityCards.forEach(c => this.communityArea.appendChild(createCardEl(c))); this.players.forEach((p, i) => { const area = this.playerAreas[i]; area.querySelector('.player-name').textContent = p.name; const cardArea = area.querySelector('.cards'); cardArea.innerHTML = ''; p.hand.forEach(c => cardArea.appendChild(createCardEl(c, i !== 0 && !reveal))); }); this.potDisplay.textContent = `Pot: ₩${this.pot.toLocaleString()}`; },
+        updatePlayerStatus(playerId, status) { this.playerAreas[playerId].querySelector('.player-status').textContent = status; },
+        resetTable() { this.communityArea.innerHTML = ''; this.potDisplay.textContent = 'Pot: ₩0'; this.players.forEach(p => { if(p) { this.playerAreas[p.id].querySelector('.cards').innerHTML = ''; this.playerAreas[p.id].querySelector('.player-status').innerHTML = ''; }}); this.disablePlayerControls(); },
+        createDeck() { this.deck = []; const s='♥♦♣♠',v='23456789TJQKA'; for(let i of s)for(let j of v)this.deck.push({suit:i,value:j}); this.deck.sort(()=>Math.random()-0.5); },
+        evaluateHand(sevenCards) { const ranks = '23456789TJQKA'; const getNumericValue = (card) => ranks.indexOf(card.value); const combinations = this.getCombinations(sevenCards, 5); let bestHand = { name: 'High Card', rank: 0, value: 0 }; for (const hand of combinations) { const counts = {}; hand.forEach(c => counts[c.value] = (counts[c.value] || 0) + 1); const values = Object.values(counts).sort((a, b) => b - a); const isFlush = new Set(hand.map(c => c.suit)).size === 1; const sortedRanks = hand.map(getNumericValue).sort((a, b) => a - b); const isStraight = sortedRanks.every((r, i) => i === 0 || r === sortedRanks[i-1] + 1) || (JSON.stringify(sortedRanks) === JSON.stringify([0,1,2,3,12])); let currentRank = 0, currentName = 'High Card', currentValue = sortedRanks.reverse().reduce((acc, v, i) => acc + v * Math.pow(14, 4 - i), 0); if (isStraight && isFlush) { currentRank = 8; currentName = "Straight Flush"; } else if (values[0] === 4) { currentRank = 7; currentName = "Four of a Kind"; } else if (values[0] === 3 && values[1] === 2) { currentRank = 6; currentName = "Full House"; } else if (isFlush) { currentRank = 5; currentName = "Flush"; } else if (isStraight) { currentRank = 4; currentName = "Straight"; } else if (values[0] === 3) { currentRank = 3; currentName = "Three of a Kind"; } else if (values[0] === 2 && values[1] === 2) { currentRank = 2; currentName = "Two Pair"; } else if (values[0] === 2) { currentRank = 1; currentName = "One Pair"; } if (currentRank > bestHand.rank) { bestHand = { name: currentName, rank: currentRank, value: currentValue }; } else if (currentRank === bestHand.rank && currentValue > bestHand.value) { bestHand = { ...bestHand, value: currentValue }; } } return bestHand; },
+        compareHands(h1, h2) { if (h1.rank !== h2.rank) return h1.rank - h2.rank; return h1.value - h2.value; },
+        getCombinations(arr, k) { const r=[]; function c(s,b){if(b.length===k){r.push([...b]);return;}for(let i=s;i<arr.length;i++){b.push(arr[i]);c(i+1,b);b.pop();}} c(0,[]); return r; }
+    };
+    const dice = { rollBtn: document.getElementById('dice-roll'), betInput: document.getElementById('dice-bet'), optionsContainer: document.getElementById('dice-options'), cupEl: document.getElementById('dice-cup'), diceEls: document.querySelectorAll('#dice-cup .dice'), selectedBet: null, init() { this.rollBtn.addEventListener('click', () => this.roll()); this.optionsContainer.addEventListener('click', (e) => { if(e.target.classList.contains('btn-option')) { this.selectedBet = e.target.dataset.betType; selectOption(this.optionsContainer, e.target); } }); }, initVisuals() { this.diceEls[0].textContent = '?'; this.diceEls[1].textContent = '?'; }, roll() { if (!this.selectedBet) { gameResultEl.innerHTML = '<span class="loss-message">베팅 타입을 선택해주세요.</span>'; return; } const betAmount = parseInt(this.betInput.value); if (!placeBet(betAmount, this.rollBtn)) return; disableAllBets(true); this.cupEl.classList.add('shake'); setTimeout(() => { this.cupEl.classList.remove('shake'); let d1, d2, sum; const shouldWin = Math.random() < getManipulatedWinRate(); do { d1 = Math.floor(Math.random() * 6) + 1; d2 = Math.floor(Math.random() * 6) + 1; sum = d1 + d2; } while (this.checkWin(sum) !== shouldWin); this.diceEls[0].textContent = d1; this.diceEls[1].textContent = d2; if (shouldWin) { const multiplier = this.selectedBet === 'small' ? 1.1 : (this.selectedBet === 'big' ? 3 : 2); handleWin(betAmount * multiplier, `결과: ${sum} (${this.selectedBet.toUpperCase()})`); } else { handleLoss(`결과: ${sum}. 아쉽네요.`); } disableAllBets(false); }, 500); }, checkWin(sum) { const isSmall = sum >= 3 && sum <= 10, isBig = sum >= 11 && sum <= 12, isOdd = sum % 2 !== 0, isEven = sum % 2 === 0; if (this.selectedBet === 'small' && isSmall) return true; if (this.selectedBet === 'big' && isBig) return true; if (this.selectedBet === 'odd' && isOdd) return true; if (this.selectedBet === 'even' && isEven) return true; return false; } };
+    const ladder = { startBtn: document.getElementById('ladder-start'), svgEl: document.getElementById('ladder-svg'), numLadders: 8, ladderData: {}, isAnimating: false, outcomes: ['꽝', '2배', '10배', '꽝', '꽝', '3배', '1.5배', '꽝'], init() { this.betInput = document.getElementById('ladder-bet'); this.optionsContainer = document.getElementById('ladder-options'); this.startBtn.addEventListener('click', () => this.start()); this.optionsContainer.addEventListener('click', (e) => { if(this.isAnimating) return; if (e.target.classList.contains('btn-option')) { this.selectedChoice = parseInt(e.target.dataset.choice); selectOption(this.optionsContainer, e.target); } }); }, initVisuals() { this.optionsContainer.innerHTML = ''; for (let i = 1; i <= this.numLadders; i++) { this.optionsContainer.innerHTML += `<button class="btn btn-option" data-choice="${i}">${i}번</button>`; } this.generateLadder(); this.drawLadder(); }, generateLadder() { this.ladderData = { rungs: [] }; const numRungs = 15, height = 400; const yPositions = Array.from({length: numRungs}, () => Math.random() * (height - 60) + 30).sort((a,b)=>a-b); for (let i = 0; i < numRungs; i++) { const col = Math.floor(Math.random() * (this.numLadders - 1)); this.ladderData.rungs.push({ y: yPositions[i], col: col }); } }, drawLadder(path = []) { this.svgEl.innerHTML = ''; const width = 600, height = 400; const spacing = width / (this.numLadders + 1); for (let i = 1; i <= this.numLadders; i++) { const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', i * spacing); line.setAttribute('y1', 0); line.setAttribute('x2', i * spacing); line.setAttribute('y2', height); line.setAttribute('stroke', '#888'); line.setAttribute('stroke-width', '3'); this.svgEl.appendChild(line); const result = this.outcomes[i - 1]; const text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); text.setAttribute('x', i * spacing); text.setAttribute('y', height - 10); const isWin = result !== '꽝'; text.setAttribute('fill', isWin ? 'var(--green-color)' : 'var(--red-color)'); text.setAttribute('text-anchor', 'middle'); text.setAttribute('font-weight', 'bold'); text.textContent = isWin ? `${result}` : result; this.svgEl.appendChild(text); } this.ladderData.rungs.forEach(rung => { const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', (rung.col + 1) * spacing); line.setAttribute('y1', rung.y); line.setAttribute('x2', (rung.col + 2) * spacing); line.setAttribute('y2', rung.y); line.setAttribute('stroke', '#888'); line.setAttribute('stroke-width', '3'); this.svgEl.appendChild(line); }); if (path.length > 1) { const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path'); let d = `M ${path[0].x} ${path[0].y}`; for(let i=1; i < path.length; i++) d += ` L ${path[i].x} ${path[i].y}`; pathEl.setAttribute('d', d); pathEl.setAttribute('stroke', 'var(--neon-pink)'); pathEl.setAttribute('stroke-width', '4'); pathEl.setAttribute('fill', 'none'); this.svgEl.appendChild(pathEl); } },
+        calculatePath(startCol) { let currentCol = startCol; const sortedRungs = [...this.ladderData.rungs].sort((a,b) => a.y - b.y); for (const rung of sortedRungs) { if (rung.col + 1 === currentCol) currentCol++; else if (rung.col + 2 === currentCol) currentCol--; } return { endCol: currentCol }; },
+        start() {
+            if (this.isAnimating) return; if (!this.selectedChoice) { gameResultEl.innerHTML = '<span class="loss-message">출발점을 선택해주세요.</span>'; return; }
+            const betAmount = parseInt(this.betInput.value); if (!placeBet(betAmount, this.startBtn)) return;
+            this.isAnimating = true; disableAllBets(true);
+            const shouldWin = Math.random() < getManipulatedWinRate();
+            let finalEndCol;
+            do { this.generateLadder(); finalEndCol = this.calculatePath(this.selectedChoice).endCol; } while ((this.outcomes[finalEndCol - 1] !== '꽝') !== shouldWin);
+            
+            const finalResult = this.outcomes[finalEndCol - 1];
+            const pathCoords = this.getPathCoordsForAnimation(this.selectedChoice);
+            this.drawLadder([], true); // Draw with results visible before animation
+            const ball = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); ball.setAttribute('r', '8'); ball.setAttribute('fill', 'var(--accent-color)'); this.svgEl.appendChild(ball);
+            let step = 0; const animationDuration = 10000; const stepDuration = animationDuration / pathCoords.length;
+            const animate = () => { if (step < pathCoords.length) { ball.setAttribute('cx', pathCoords[step].x); ball.setAttribute('cy', pathCoords[step].y); step++; setTimeout(animate, stepDuration); } else { this.drawLadder(pathCoords, true); if (finalResult !== '꽝') { handleWin(betAmount * parseFloat(finalResult), `${finalResult} 당첨!`); } else { handleLoss('아쉽네요, 꽝입니다!'); } this.isAnimating = false; disableAllBets(false); } };
+            animate();
+        },
+        getPathCoordsForAnimation(startCol) {
+            const width = 600, height = 400, spacing = width / (this.numLadders + 1);
+            let path = [{x: startCol * spacing, y: 0}]; let currentCol = startCol;
+            const sortedRungs = [...this.ladderData.rungs].sort((a,b) => a.y - b.y);
+            sortedRungs.forEach(rung => {
+                path.push({x: currentCol * spacing, y: rung.y});
+                if (rung.col + 1 === currentCol) { currentCol++; }
+                else if (rung.col + 2 === currentCol) { currentCol--; }
+                path.push({x: currentCol * spacing, y: rung.y});
+            });
+            path.push({x: currentCol * spacing, y: height}); return path;
+        }
+    };
+    const slots = { spinBtn: document.getElementById('slots-spin'), betInput: document.getElementById('slots-bet'), reels: [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')], leverArm: document.getElementById('slots-lever-arm'), leverHandle: document.getElementById('slots-lever-handle'), symbols: ['🍒', '🍋', '🍊', '🍉', '⭐', '💎', '💰'], payouts: {'💰': 20, '💎': 15, '⭐': 10, '🍉': 8, '🍊': 5, '🍋': 3, '🍒': 2}, isMegaMode: false, init() { this.spinBtn.addEventListener('click', () => this.spin()); this.leverHandle.addEventListener('click', () => this.spin()); setInterval(() => this.triggerMegaMode(), 10 * 60 * 1000); }, triggerMegaMode() { this.isMegaMode = true; document.getElementById('slots').classList.add('mega-mode'); document.getElementById('slots-description').textContent = '메가 잭팟 모드! (1분간)'; setTimeout(() => { this.isMegaMode = false; document.getElementById('slots').classList.remove('mega-mode'); document.getElementById('slots-description').textContent = '같은 그림 3개를 맞추면 당첨됩니다.'; }, 60 * 1000); }, spin() { const betAmount = parseInt(this.betInput.value); if (!placeBet(betAmount, this.spinBtn)) return; disableAllBets(true); this.leverArm.classList.add('pull'); setTimeout(() => this.leverArm.classList.remove('pull'), 500); let finalReels = []; const winRate = this.isMegaMode ? 0.05 : getManipulatedWinRate(); if (Math.random() < winRate) { const winSymbol = this.symbols[Math.floor(Math.random() * this.symbols.length)]; finalReels = [winSymbol, winSymbol, winSymbol]; } else { finalReels = [this.symbols[0], this.symbols[1], this.symbols[2]]; while (finalReels[0] === finalReels[1] && finalReels[1] === finalReels[2]) { finalReels = Array(3).fill(null).map(() => this.symbols[Math.floor(Math.random() * this.symbols.length)]); } } let spinCount = 0; const spinInterval = setInterval(() => { this.reels.forEach(reel => { reel.textContent = this.symbols[Math.floor(Math.random() * this.symbols.length)]; }); spinCount++; if (spinCount > 15) { clearInterval(spinInterval); this.reels.forEach((reel, i) => reel.textContent = finalReels[i]); this.checkResult(finalReels, betAmount); disableAllBets(false); } }, 100); }, checkResult(reels, betAmount) { if (reels[0] === reels[1] && reels[1] === reels[2]) { const multiplier = this.isMegaMode ? this.payouts[reels[0]] * 10 : this.payouts[reels[0]]; handleWin(betAmount * multiplier, this.isMegaMode ? "메가 잭팟!" : "잭팟!"); } else { if ((reels[0] === reels[1]) || (reels[1] === reels[2]) || (reels[0] === reels[2])) { handleLoss("아깝네요! 거의 다 왔는데!"); } else { handleLoss("아쉽네요, 다음 기회에!"); } } } };
+    const roulette = { spinBtn: document.getElementById('roulette-spin'), wheelEl: document.querySelector('.roulette-wheel'), ballEl: document.querySelector('.roulette-ball'), numbers: [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26], reds: [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36], selectedBet: null, init() { this.optionsContainer = document.getElementById('roulette-options'); this.betInput = document.getElementById('roulette-bet'); this.spinBtn.addEventListener('click', () => this.spin()); this.optionsContainer.addEventListener('click', (e) => { if(e.target.classList.contains('btn-option')) { this.selectedBet = e.target.dataset.betType; selectOption(this.optionsContainer, e.target); } }); }, initVisuals() {
+        this.wheelEl.innerHTML = ''; const angleStep = 360 / this.numbers.length;
+        this.numbers.forEach((num, i) => { const numberEl = document.createElement('div'); numberEl.classList.add('number'); numberEl.textContent = num; const angle = i * angleStep; const radius = 140; const x = Math.sin(angle * Math.PI / 180) * radius; const y = -Math.cos(angle * Math.PI / 180) * radius; numberEl.style.transform = `translate(${x}px, ${y}px)`; this.wheelEl.appendChild(numberEl); });
+        const colors = this.numbers.map(num => num === 0 ? 'var(--green-color)' : (this.reds.includes(num) ? 'var(--red-color)' : '#2c3e50')); let gradient = '';
+        for(let i=0; i<this.numbers.length; i++) { gradient += `${colors[i]} ${i*angleStep}deg ${(i+1)*angleStep}deg, `; }
+        this.wheelEl.style.background = `conic-gradient(from -${angleStep/2}deg, ${gradient.slice(0,-2)})`;
+    }, spin() { if (!this.selectedBet) { gameResultEl.innerHTML = '<span class="loss-message">베팅 타입을 선택해주세요.</span>'; return; } const betAmount = parseInt(this.betInput.value); if (!placeBet(betAmount, this.spinBtn)) return; disableAllBets(true); gameResultEl.innerHTML = '<span>휠이 돌아갑니다...</span>'; let resultNumber; do { resultNumber = this.numbers[Math.floor(Math.random() * this.numbers.length)]; } while (this.checkWin(resultNumber) !== (Math.random() < getManipulatedWinRate())); const resultIndex = this.numbers.indexOf(resultNumber); const angleStep = 360 / this.numbers.length; const targetAngle = (360 * 10) - (resultIndex * angleStep); this.wheelEl.style.transform = `rotate(${targetAngle}deg)`; this.ballEl.style.transform = `rotate(${-targetAngle * 1.5}deg)`; setTimeout(() => { const isRed = this.reds.includes(resultNumber); const resultText = `결과: ${resultNumber} (${isRed ? '레드' : '블랙'})`; if (this.checkWin(resultNumber)) { handleWin(betAmount * 2, resultText); } else { handleLoss(resultText + '. 아쉽네요.'); } disableAllBets(false); }, 8200); }, checkWin(num) { const isRed = this.reds.includes(num), isEven = num !== 0 && num % 2 === 0; if ((this.selectedBet === 'red' && isRed) || (this.selectedBet === 'black' && !isRed && num !== 0) || (this.selectedBet === 'even' && isEven) || (this.selectedBet === 'odd' && !isEven && num !== 0)) return true; return false; } };
+    const horse = { startBtn: document.getElementById('horse-start'), betInput: document.getElementById('horse-bet'), optionsContainer: document.getElementById('horse-options'), trackEl: document.getElementById('race-track'), selectedChoice: null, numHorses: 4, init() { this.startBtn.addEventListener('click', () => this.start()); this.optionsContainer.addEventListener('click', (e) => { if (e.target.classList.contains('btn-option')) { this.selectedChoice = e.target.dataset.choice; selectOption(this.optionsContainer, e.target); } }); }, initVisuals() { this.trackEl.innerHTML = ''; const horseIcons = ['🐎', '🏇', '🐴', '🦄']; for (let i = 0; i < this.numHorses; i++) { const lane = document.createElement('div'); lane.className = 'horse-lane'; const horseEl = document.createElement('div'); horseEl.className = 'horse'; horseEl.id = `horse-${i+1}`; horseEl.textContent = horseIcons[i]; lane.appendChild(horseEl); this.trackEl.appendChild(lane); } }, start() { if (!this.selectedChoice) { gameResultEl.innerHTML = '<span class="loss-message">우승마를 선택해주세요.</span>'; return; } const betAmount = parseInt(this.betInput.value); if (!placeBet(betAmount, this.startBtn)) return; disableAllBets(true); gameResultEl.innerHTML = '<span>경주 시작!</span>'; let winner; let scenario; if (Math.random() < getManipulatedWinRate()) { scenario = 'win'; winner = this.selectedChoice; } else { scenario = 'close_loss'; const choices = Array.from({length: this.numHorses}, (_, i) => (i+1).toString()).filter(c => c !== this.selectedChoice); winner = choices[Math.floor(Math.random() * choices.length)]; } const horses = Array.from({length: this.numHorses}, (_, i) => document.getElementById(`horse-${i+1}`)); const positions = Array(this.numHorses).fill(0); const raceWidth = this.trackEl.clientWidth - 40; const raceInterval = setInterval(() => { let finished = false; for (let i = 0; i < this.numHorses; i++) { let speed = 4 + Math.random(); const horseNum = (i + 1).toString(); if (horseNum === winner) { speed += 0.5; } if (scenario === 'close_loss' && horseNum === this.selectedChoice) { speed += 0.45; } positions[i] += speed; horses[i].style.transform = `translateX(${positions[i]}px)`; if (positions[i] >= raceWidth) { finished = true; } } if (finished) { clearInterval(raceInterval); const multipliers = {1:2, 2:3, 3:4, 4:5}; if (scenario === 'win') { handleWin(betAmount * multipliers[winner], `${winner}번마 우승!`); } else { handleLoss(`간발의 차로 패배! 우승마는 ${winner}번 입니다.`); } disableAllBets(false); } }, 50); } };
+    const blackjack = { dealBtn: document.getElementById('blackjack-deal'), hitBtn: document.getElementById('blackjack-hit'), standBtn: document.getElementById('blackjack-stand'), betInput: document.getElementById('blackjack-bet'), playerArea: document.getElementById('player-cards'), dealerArea: document.getElementById('dealer-cards'), playerScoreEl: document.getElementById('player-score'), dealerScoreEl: document.getElementById('dealer-score'), deck: [], playerHand: [], dealerHand: [], betAmount: 0, init() { this.dealBtn.addEventListener('click', () => this.deal()); this.hitBtn.addEventListener('click', () => this.hit()); this.standBtn.addEventListener('click', () => this.stand()); }, createDeck() { const suits = ['♥', '♦', '♣', '♠']; const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K']; this.deck = []; for (let suit of suits) { for (let value of values) { this.deck.push({ suit, value }); } } this.deck.sort(() => Math.random() - 0.5); }, drawCard(isDealer = false) { if(isDealer && Math.random() < 0.25) { const goodCardIndex = this.deck.findIndex(c => ['A', 'T', 'J', 'Q', 'K'].includes(c.value)); if(goodCardIndex !== -1) return this.deck.splice(goodCardIndex, 1)[0]; } return this.deck.pop(); }, getScore(hand) { let score = 0, aceCount = 0; for (let card of hand) { if (card.value === 'A') { aceCount++; score += 11; } else if (['T', 'J', 'Q', 'K'].includes(card.value)) { score += 10; } else { score += parseInt(card.value); } } while (score > 21 && aceCount > 0) { score -= 10; aceCount--; } return score; }, renderHand(hand, area) { area.innerHTML = ''; hand.forEach(card => area.appendChild(createCardEl(card, card.value === '?'))); }, updateScores() { this.playerScoreEl.textContent = this.getScore(this.playerHand); this.dealerScoreEl.textContent = this.getScore(this.dealerHand); }, deal() { this.betAmount = parseInt(this.betInput.value); if (!placeBet(this.betAmount, this.dealBtn)) return; disableAllBets(true); this.dealBtn.disabled = true; this.hitBtn.disabled = false; this.standBtn.disabled = false; this.createDeck(); this.playerHand = [this.drawCard(), this.drawCard()]; this.dealerHand = [this.drawCard(true), this.drawCard(true)]; this.renderHand(this.playerHand, this.playerArea); this.renderHand([this.dealerHand[0], {value: '?', suit:''}], this.dealerArea); this.playerScoreEl.textContent = this.getScore(this.playerHand); this.dealerScoreEl.textContent = '?'; gameResultEl.innerHTML = '<span>Hit 또는 Stand를 선택하세요.</span>'; if (this.getScore(this.playerHand) === 21) { this.stand(); } }, hit() { this.playerHand.push(this.drawCard()); this.renderHand(this.playerHand, this.playerArea); this.playerScoreEl.textContent = this.getScore(this.playerHand); if (this.getScore(this.playerHand) > 21) { handleLoss('버스트! 패배했습니다.'); this.endGame(); } }, stand() { this.hitBtn.disabled = true; this.standBtn.disabled = true; this.renderHand(this.dealerHand, this.dealerArea); this.updateScores(); const dealerTurn = setInterval(() => { if (this.getScore(this.dealerHand) < 17) { this.dealerHand.push(this.drawCard(true)); this.renderHand(this.dealerHand, this.dealerArea); this.updateScores(); } else { clearInterval(dealerTurn); this.checkWinner(); } }, 1000); }, checkWinner() { const playerScore = this.getScore(this.playerHand); const dealerScore = this.getScore(this.dealerHand); const playerWins = Math.random() < getManipulatedWinRate(); if (playerWins) { if (playerScore > dealerScore && playerScore <= 21 || dealerScore > 21) handleWin(this.betAmount * 2, "승리!"); else handleLoss("딜러 승리. 아쉽네요."); } else { if (playerScore < dealerScore && dealerScore <= 21 || playerScore > 21) handleLoss("딜러 승리. 아쉽네요."); else handleWin(this.betAmount * 2, "승리!"); } this.endGame(); }, endGame() { disableAllBets(false); this.dealBtn.disabled = false; this.hitBtn.disabled = true; this.standBtn.disabled = true; } };
+    const baccarat = { dealBtn: document.getElementById('baccarat-deal'), betInput: document.getElementById('baccarat-bet'), optionsContainer: document.getElementById('baccarat-options'), playerArea: document.getElementById('baccarat-player-cards'), bankerArea: document.getElementById('baccarat-banker-cards'), playerScoreEl: document.getElementById('baccarat-player-score'), bankerScoreEl: document.getElementById('baccarat-banker-score'), selectedBet: null, init() { this.dealBtn.addEventListener('click', () => this.play()); this.optionsContainer.addEventListener('click', (e) => { if(e.target.classList.contains('btn-option')) { this.selectedBet = e.target.dataset.betType; selectOption(this.optionsContainer, e.target); } }); }, getCardValue(card) { if (['T', 'J', 'Q', 'K'].includes(card.value)) return 0; if (card.value === 'A') return 1; return parseInt(card.value); }, getScore(hand) { return hand.reduce((sum, card) => sum + this.getCardValue(card), 0) % 10; }, play() { if (!this.selectedBet) { gameResultEl.innerHTML = '<span class="loss-message">베팅 대상을 선택해주세요.</span>'; return; } const betAmount = parseInt(this.betInput.value); if (!placeBet(betAmount, this.dealBtn)) return; disableAllBets(true); blackjack.createDeck(); const playerHand = [blackjack.deck.pop(), blackjack.deck.pop()]; const bankerHand = [blackjack.deck.pop(), blackjack.deck.pop()]; this.playerArea.innerHTML = ''; playerHand.forEach(c => this.playerArea.appendChild(createCardEl(c))); this.bankerArea.innerHTML = ''; bankerHand.forEach(c => this.bankerArea.appendChild(createCardEl(c))); const playerScore = this.getScore(playerHand); const bankerScore = this.getScore(bankerHand); this.playerScoreEl.textContent = playerScore; this.bankerScoreEl.textContent = bankerScore; let winner; let naturalWinner; if (playerScore > bankerScore) naturalWinner = 'player'; else if (bankerScore > playerScore) naturalWinner = 'banker'; else naturalWinner = 'tie'; if (Math.random() < getManipulatedWinRate()) { winner = this.selectedBet; } else { const choices = ['player', 'banker', 'tie'].filter(c => c !== this.selectedBet); winner = choices[Math.floor(Math.random() * choices.length)]; } if (this.selectedBet === winner) { let multiplier = 2; if (winner === 'banker') multiplier = 1.95; if (winner === 'tie') multiplier = 9; handleWin(betAmount * multiplier, `${winner.toUpperCase()} 승리!`); } else { handleLoss(`아쉽네요, ${naturalWinner.toUpperCase()} 승리입니다.`); } setTimeout(() => disableAllBets(false), 1000); } };
+    const keno = { drawBtn: document.getElementById('keno-draw'), clearBtn: document.getElementById('keno-clear'), betInput: document.getElementById('keno-bet'), board: document.getElementById('keno-board'), selectedNumbers: new Set(), isInitialized: false, init() { if (this.isInitialized) return; this.drawBtn.addEventListener('click', () => this.draw()); this.clearBtn.addEventListener('click', () => this.clear()); this.board.addEventListener('click', (e) => { if (e.target.classList.contains('keno-num')) this.toggleNumber(e.target); }); this.board.innerHTML = ''; for (let i = 1; i <= 80; i++) { const numEl = document.createElement('button'); numEl.textContent = i; numEl.dataset.num = i; numEl.className = 'keno-num'; this.board.appendChild(numEl); } this.isInitialized = true; }, clear() { this.selectedNumbers.clear(); this.board.querySelectorAll('.selected').forEach(el => el.classList.remove('selected')); }, toggleNumber(el) { const num = parseInt(el.dataset.num); if (this.selectedNumbers.has(num)) { this.selectedNumbers.delete(num); el.classList.remove('selected'); } else if (this.selectedNumbers.size < 10) { this.selectedNumbers.add(num); el.classList.add('selected'); } }, draw() { if (this.selectedNumbers.size === 0) { gameResultEl.innerHTML = '<span class="loss-message">숫자를 선택해주세요.</span>'; return; } const betAmount = parseInt(this.betInput.value); if (!placeBet(betAmount, this.drawBtn)) return; disableAllBets(true); const allNumbers = Array.from({length: 80}, (_, i) => i + 1); let drawnNumbers = []; const winRate = getManipulatedWinRate(); let hitsToForce = 0; if (winRate < 0.3) hitsToForce = Math.random() < 0.7 ? 0 : 1; else if (winRate < 0.4) hitsToForce = Math.random() < 0.5 ? 1 : 2; else hitsToForce = 2 + Math.floor(Math.random()*2); const playerChoices = Array.from(this.selectedNumbers); for(let i=0; i<hitsToForce; i++) { if(playerChoices.length > 0) { const forcedHit = playerChoices.splice(Math.floor(Math.random() * playerChoices.length), 1)[0]; drawnNumbers.push(forcedHit); allNumbers.splice(allNumbers.indexOf(forcedHit), 1); } } while (drawnNumbers.length < 20) { drawnNumbers.push(allNumbers.splice(Math.floor(Math.random() * allNumbers.length), 1)[0]); } let matchCount = 0; this.board.querySelectorAll('.keno-num').forEach(el => { el.classList.remove('hit'); const num = parseInt(el.dataset.num); if (drawnNumbers.includes(num)) { el.classList.add('hit'); if (this.selectedNumbers.has(num)) { matchCount++; } } }); const payouts = {0:0, 1:0, 2:0, 3:1, 4:2, 5:5, 6:10, 7:20, 8:50, 9:100, 10:200}; const multiplier = payouts[matchCount] || 0; if (multiplier > 0) handleWin(betAmount * multiplier, `${matchCount}개 적중!`); else handleLoss(`${matchCount}개 적중. 아쉽네요.`); setTimeout(() => disableAllBets(false), 1000); } };
+
+    // --- 최종 초기화 ---
+    const allGames = { poker, dice, ladder, slots, roulette, horse, blackjack, baccarat, keno };
+    function switchGame(gameId) {
+        gameState.currentGame = gameId;
+        hideRageBet();
+        gameNav.querySelectorAll('button').forEach(btn => btn.classList.toggle('active', btn.dataset.game === gameId));
+        document.querySelectorAll('.game-content').forEach(content => content.classList.toggle('active', content.id === `game-${gameId}`));
+        gameResultEl.innerHTML = '<span>게임을 선택하고 베팅하세요.</span>';
+        if (allGames[gameId] && typeof allGames[gameId].initVisuals === 'function') {
+            allGames[gameId].initVisuals();
+        }
+    }
+    gameNav.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') switchGame(e.target.dataset.game); });
+    
+    for (const game of Object.values(allGames)) { if(game.init) game.init(); }
+    
+    loadState();
+    switchGame('poker');
+    setInterval(updateFakePlayerCount, 3500);
+    setInterval(showFakeJackpot, 9000);
+    setInterval(updateFakeGameStats, 5000);
+});
+</script>
+
+</body>
+</html>
